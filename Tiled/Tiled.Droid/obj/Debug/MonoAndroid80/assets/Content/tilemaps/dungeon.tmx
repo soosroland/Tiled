@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="24" height="15" tilewidth="16" tileheight="16">
+ <tileset firstgid="1" name="dungeon_1" tilewidth="16" tileheight="16">
+  <image source="dungeon_1.png" width="320" height="192"/>
+ </tileset>
+ <layer name="GroundLayer" width="24" height="15">
+  <data encoding="base64" compression="zlib">
+   eJylk81twkAQhR0SfhrglgZyowFuaYAbDXCjAUL4aQAIPxWA7FCBIzupIBHpASrhWZoVT6NZvILDp52383b97F1voygaCQfwL/UYTGjuDQzBO/nH1J+oPYreDqRgKRzBSeoVWNPcHCzAB/lX1F+rPYreF+iCHHyDH5Apvaf6U7T2+HQH9EFCa7l2/ljmtXY+n+4Z+R9AFdRAQ3wuT6x0bvit/JxrQGc0lf1iz5gYfn6/Iv+zeqcZndFGcmSeMTf8nL8JWp4z8mUu++asX8BriV9nLrszrNtyvtf89+S37qf2hea31ln3U+cOzWs9z+UP8d+aPw30cx2av9j/N7r8f3WBtasr4BE8UU97dP0HzqM82Us=
+  </data>
+ </layer>
+ <layer name="ItemLayer" width="24" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjYBh4sBqI1+DhUwr2A/EBPPzBDtYC8To8fErBQSA+hIc/CoYWkB1oB4wCqgEAXNsLhg==
+  </data>
+ </layer>
+</map>

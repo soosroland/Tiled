@@ -1,0 +1,16 @@
+C:\Users\Roland\source\repos\Tiled\Tiled\Tiled.Droid\obj\Debug\90\android\assets\Tiled.Droid.dll
+C:\Users\Roland\source\repos\Tiled\Tiled\Tiled.Droid\obj\Debug\90\android\assets\CocosSharp.dll
+C:\Users\Roland\source\repos\Tiled\Tiled\Tiled.Droid\obj\Debug\90\android\assets\Java.Interop.dll
+C:\Users\Roland\source\repos\Tiled\Tiled\Tiled.Droid\obj\Debug\90\android\assets\Mono.Android.dll
+C:\Users\Roland\source\repos\Tiled\Tiled\Tiled.Droid\obj\Debug\90\android\assets\MonoGame.Framework.dll
+C:\Users\Roland\source\repos\Tiled\Tiled\Tiled.Droid\obj\Debug\90\android\assets\mscorlib.dll
+C:\Users\Roland\source\repos\Tiled\Tiled\Tiled.Droid\obj\Debug\90\android\assets\OpenTK.dll
+C:\Users\Roland\source\repos\Tiled\Tiled\Tiled.Droid\obj\Debug\90\android\assets\System.Core.dll
+C:\Users\Roland\source\repos\Tiled\Tiled\Tiled.Droid\obj\Debug\90\android\assets\System.dll
+C:\Users\Roland\source\repos\Tiled\Tiled\Tiled.Droid\obj\Debug\90\android\assets\System.Xml.dll
+C:\Users\Roland\source\repos\Tiled\Tiled\Tiled.Droid\obj\Debug\90\android\assets\System.Xml.Linq.dll
+C:\Users\Roland\source\repos\Tiled\Tiled\Tiled.Droid\obj\Debug\90\android\assets\System.Runtime.Serialization.dll
+C:\Users\Roland\source\repos\Tiled\Tiled\Tiled.Droid\obj\Debug\90\android\assets\System.ServiceModel.Internals.dll
+C:\Users\Roland\source\repos\Tiled\Tiled\Tiled.Droid\obj\Debug\90\android\assets\System.Net.Http.dll
+C:\Users\Roland\source\repos\Tiled\Tiled\Tiled.Droid\obj\Debug\90\android\assets\OpenTK-1.0.dll
+C:\Users\Roland\source\repos\Tiled\Tiled\Tiled.Droid\obj\Debug\90\android\assets\Mono.Security.dll

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" tiledversion="1.1.5" orientation="orthogonal" renderorder="right-down" width="24" height="15" tilewidth="16" tileheight="16" infinite="0" nextobjectid="1">
+ <tileset firstgid="1" source="dungeon_1.tsx"/>
+ <layer name="GroundLayer" width="24" height="15">
+  <data encoding="base64" compression="zlib">
+   eJylk8kNwkAMRQMSSwPcaIobDXCjAXYaYKcCUAIVBBGoAAQ9QCX8SB7xZXlgBIenscd/nD9LNlEUDYQbuEs8BCOa64Ie6JN+SPWR6pHXtiAFC+EBnhIvwYrmpmAG5qRfUn2leuS1A2iCDJzAGRxVvqd4J7nW+PIGaIOE1nLs9LHM69zpfHnL8F8AJVAGVdE5P7HKM0Nv+WdfHbqjsfSLPWNi6Hl/ef+62tOE7mgtPo6eMTP07L8m52Pdkc/ztzPnvCH9P+m1529vhnPX/5P+X//6fWpdqH9rnfU+te9Qv9b3nP8Q/a/+00A9x6H+8/6X6P3/VYQy4WpFNV+hseSJr+AFo+/ZtA==
+  </data>
+ </layer>
+ <layer name="ItemLayer" width="24" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjYCAePIZiWgFyzd9HhBouMsylFcDlFmLdOJVaDsEBZKlo1ioqmrUSSp8nQu1giu+BBuSExTQk9gVqOYQIsBqI11DRvBwGVP/vB+IDaGqw5ae9BMylV/oCAMO/DV8=
+  </data>
+ </layer>
+</map>

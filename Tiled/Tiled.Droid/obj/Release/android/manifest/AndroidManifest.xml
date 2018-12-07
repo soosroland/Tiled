@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="Tiled.Droid" android:versionCode="1" android:versionName="1.0">
+  <!--suppress UsesMinSdkAttributes-->
+  <uses-sdk android:minSdkVersion="11" />
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.INTERNET" />
+  <application android:label="Tiled.Droid" android:name="android.app.Application" android:allowBackup="true" android:icon="@drawable/icon">
+    <activity android:alwaysRetainTaskState="true" android:configChanges="keyboard|keyboardHidden|orientation" android:icon="@drawable/icon" android:label="Tiled.Droid" android:launchMode="singleInstance" android:screenOrientation="sensorLandscape" android:theme="@style/Theme.Splash" android:name="md561d37b88b374f1f338636cdc9354c2a2.Program">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+    <provider android:name="mono.MonoRuntimeProvider" android:exported="false" android:initOrder="2147483647" android:authorities="Tiled.Droid.mono.MonoRuntimeProvider.__mono_init__" />
+  </application>
+</manifest>
