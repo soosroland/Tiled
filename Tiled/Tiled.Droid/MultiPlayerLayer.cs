@@ -33,8 +33,7 @@ namespace Tiled
         int actual_speed;
         int actual_level;
         static String text;
-
-        NetworkStream serverStream;
+        
         private static int bufferSize = 2048;
         private static byte[] buffer = new byte[bufferSize];
         private static List<Socket> clientSockets = new List<Socket>();
@@ -119,20 +118,20 @@ namespace Tiled
             AddChild(start);
 
 
-            System.Diagnostics.Debug.WriteLine("Setting Up Server Plz Wait");
+            /*System.Diagnostics.Debug.WriteLine("Setting Up Server Plz Wait");
             serverSocket.Bind(new IPEndPoint(IPAddress.Any, 8890));
             serverSocket.Listen(10);
             serverSocket.BeginAccept(new AsyncCallback(CallBack), null);
-            System.Diagnostics.Debug.WriteLine("Server Made");
+            System.Diagnostics.Debug.WriteLine("Server Made");*/
 
 
 
             /*tcpClient = new TcpClient("192.168.0.248", 8888); // Emulator server address
             //var tcpClient = new TcpClient("10.0.2.2", 8888); // Emulator server address
             serverStream = tcpClient.GetStream();*/
-            byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Multiplayer Request");
+            /*byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Multiplayer Request");
             _serverStream.Write(outStream, 0, outStream.Length);
-            _serverStream.Flush();
+            _serverStream.Flush();*/
 
         }
 
@@ -156,7 +155,7 @@ namespace Tiled
             AddEventListener(touchListener, this);
         }
 
-
+        /*
         void CallBack(IAsyncResult e)
         {
             try
@@ -196,7 +195,7 @@ namespace Tiled
                 socket.BeginReceive(buffer, 0, bufferSize, SocketFlags.None, ReceiveCallBack, socket);
             }
             catch (Exception) { }
-        }
+        }*/
 
 
         private void HandleInput(System.Collections.Generic.List<CCTouch> touches, CCEvent touchEvent)
@@ -225,7 +224,10 @@ namespace Tiled
                             default:
                                 break;
                         }
-                        _mainLayer.StartGame((actual_level + 1).ToString(), hp, speed_List[actual_speed]);
+                        byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Matchmaking;temp[1];temp[2];5;temp[4];temp[5]");
+                        _serverStream.Write(outStream, 0, outStream.Length);
+                        _serverStream.Flush();
+                        _mainLayer.StartMultiPlayerGame((actual_level + 1).ToString(), hp, speed_List[actual_speed]);
                     }
                     else if (level_left.sprite.BoundingBoxTransformedToWorld.ContainsPoint(touch.Location))
                     {

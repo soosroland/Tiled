@@ -90,6 +90,7 @@
     <Compile Include="GameLayer.cs" />
     <Compile Include="HighScoreLayer.cs" />
     <Compile Include="HowToPlayLayer.cs" />
+    <Compile Include="MultiPlayerGameLayer.cs" />
     <Compile Include="MultiPlayerLayer.cs" />
     <Compile Include="SinglePlayerLayer.cs" />
     <Compile Include="MainLayer.cs" />

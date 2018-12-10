@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Text;
 using Tiled.Droid.Entities;
 
-namespace Tiled.Shared
+namespace Tiled.Droid
 {
     public class GameLayer : CCLayer
     {
@@ -32,7 +32,7 @@ namespace Tiled.Shared
         Finish finish;
         CharacterModel character;
         CharacterModel character_enemy;
-        List<Entities> entities = new List<Entities>();
+        //List<Entities> entities = new List<Entities>();
         List<CharacterModel> charmodel_List = new List<CharacterModel>();
         List<CharacterModel> charmodel_enemy_List = new List<CharacterModel>();
         List<Treasure> treasure_List = new List<Treasure>();

@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Tiled.Droid;
 using Tiled.Droid.Entities;
 using Tiled.Shared;
 
@@ -16,12 +17,13 @@ namespace Tiled
     {
         MenuLayer menuLayer;
         GameLayer gameLayer;
+        MultiPlayerGameLayer multiPlayerGameLayer;
         HighScoreLayer highScoreLayer;
         HowToPlayLayer howToPlayLayer;
         YouDiedLayer youDiedLayer;
         VictoryLayer victoryLayer;
         PlayMenuLayer PlayMenuLayer;
-        SinglePlayerLayer SingelPlayerLayer;
+        SinglePlayerLayer SinglePlayerLayer;
         MultiPlayerLayer MultiPlayerLayer;
 
         NetworkStream serverStream;
@@ -37,7 +39,8 @@ namespace Tiled
             serverSocket.Listen(10);
             serverSocket.BeginAccept(new AsyncCallback(CallBack), null);
             System.Diagnostics.Debug.WriteLine("Server Made");
-            var tcpClient = new TcpClient("192.168.0.248", 8888); // Emulator server address
+            //var tcpClient = new TcpClient("192.168.0.248", 8888); // Emulator server address
+            var tcpClient = new TcpClient("192.168.3.102", 8888); // Emulator server address
             //var tcpClient = new TcpClient("10.0.2.2", 8888); // Emulator server address
             serverStream = tcpClient.GetStream();
         }
@@ -50,8 +53,14 @@ namespace Tiled
          
         public void StartGame(String level_num, int hp, String speed)
         {
-            this.RemoveChild(PlayMenuLayer);
+            this.RemoveChild(SinglePlayerLayer);
             this.AddChild(gameLayer = new GameLayer(this, level_num, hp, speed));
+        }
+
+        public void StartMultiPlayerGame(String level_num, int hp, String speed)
+        {
+            this.RemoveChild(MultiPlayerLayer);
+            this.AddChild(multiPlayerGameLayer = new MultiPlayerGameLayer(this, level_num, hp, speed, serverStream));
         }
 
         public void PlayMenu()
@@ -63,7 +72,7 @@ namespace Tiled
         public void SinglePlayer()
         {
             this.RemoveChild(PlayMenuLayer);
-            this.AddChild(SingelPlayerLayer = new SinglePlayerLayer(this));
+            this.AddChild(SinglePlayerLayer = new SinglePlayerLayer(this));
         }
 
         public void MultiPlayer()
