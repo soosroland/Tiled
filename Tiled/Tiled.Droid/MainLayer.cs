@@ -18,6 +18,7 @@ namespace Tiled
         MenuLayer menuLayer;
         GameLayer gameLayer;
         MultiPlayerGameLayer multiPlayerGameLayer;
+        MultiPlayerLoadingLayer multiPlayerLoadingLayer;
         HighScoreLayer highScoreLayer;
         HowToPlayLayer howToPlayLayer;
         YouDiedLayer youDiedLayer;
@@ -31,6 +32,12 @@ namespace Tiled
         private static byte[] buffer = new byte[bufferSize];
         private static List<Socket> clientSockets = new List<Socket>();
         Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        
+        static int _player_id = 0;
+        static String _level_num;
+        static int _hp;
+        static String _speed;
+        static int player_count = 2;
 
         public MainLayer()
         {
@@ -39,8 +46,8 @@ namespace Tiled
             serverSocket.Listen(10);
             serverSocket.BeginAccept(new AsyncCallback(CallBack), null);
             System.Diagnostics.Debug.WriteLine("Server Made");
-            //var tcpClient = new TcpClient("192.168.0.248", 8888); // Emulator server address
-            var tcpClient = new TcpClient("192.168.3.102", 8888); // Emulator server address
+            var tcpClient = new TcpClient("192.168.0.248", 8888); // Emulator server address
+            //var tcpClient = new TcpClient("192.168.3.102", 8888); // Emulator server address
             //var tcpClient = new TcpClient("10.0.2.2", 8888); // Emulator server address
             serverStream = tcpClient.GetStream();
         }
@@ -57,10 +64,19 @@ namespace Tiled
             this.AddChild(gameLayer = new GameLayer(this, level_num, hp, speed));
         }
 
+        public void StartMultiPlayerGame2(String level_num, int hp, String speed)
+        {
+            this.RemoveChild(multiPlayerLoadingLayer);
+            this.AddChild(multiPlayerGameLayer = new MultiPlayerGameLayer(this, level_num, hp, speed, serverStream, _player_id, player_count));
+        }
+
         public void StartMultiPlayerGame(String level_num, int hp, String speed)
         {
+            _level_num = level_num;
+            _hp = hp;
+            _speed = speed;
             this.RemoveChild(MultiPlayerLayer);
-            this.AddChild(multiPlayerGameLayer = new MultiPlayerGameLayer(this, level_num, hp, speed, serverStream));
+            this.AddChild(multiPlayerLoadingLayer = new MultiPlayerLoadingLayer(this, serverStream));
         }
 
         public void PlayMenu()
@@ -92,9 +108,7 @@ namespace Tiled
             this.RemoveChild(menuLayer);
             this.AddChild(howToPlayLayer = new HowToPlayLayer(this));
         }
-
-
-
+        
         public void BackToMenu()
         {
             this.RemoveAllChildren();
@@ -125,7 +139,7 @@ namespace Tiled
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex + " Errooooor"); }
         }
 
-        private static void ReceiveCallBack(IAsyncResult e)
+        private void ReceiveCallBack(IAsyncResult e)
         {
             try
             {
@@ -146,10 +160,25 @@ namespace Tiled
                 Array.Copy(buffer, dataBuf, received);
 
                 string text = System.Text.Encoding.ASCII.GetString(dataBuf);
+                HandleIncomingEvent(text, socket.RemoteEndPoint.ToString().Split(':')[0]);
                 System.Diagnostics.Debug.WriteLine("Server request: Menu: " + text);
                 socket.BeginReceive(buffer, 0, bufferSize, SocketFlags.None, ReceiveCallBack, socket);
             }
             catch (Exception) { }
+        }
+
+        protected void HandleIncomingEvent(String text, String ip)
+        {
+            String[] temp = text.Split(';');
+            switch (temp[0])
+            {
+                case "StartGame":
+                    _player_id = int.Parse(temp[1]);
+                    StartMultiPlayerGame2(_level_num, _hp, _speed);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

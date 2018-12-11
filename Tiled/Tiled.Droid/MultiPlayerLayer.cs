@@ -224,7 +224,7 @@ namespace Tiled
                             default:
                                 break;
                         }
-                        byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Matchmaking;temp[1];temp[2];5;temp[4];temp[5]");
+                        byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Matchmaking;temp[1];temp[2];2;temp[4];temp[5]");
                         _serverStream.Write(outStream, 0, outStream.Length);
                         _serverStream.Flush();
                         _mainLayer.StartMultiPlayerGame((actual_level + 1).ToString(), hp, speed_List[actual_speed]);

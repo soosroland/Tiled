@@ -14,8 +14,8 @@ namespace Tiled.Droid
     public class MultiPlayerGameLayer : CCLayer
     {
 
-        MainLayer _mainLayer;
-        NetworkStream _serverStream;
+        static MainLayer _mainLayer;
+        static NetworkStream _serverStream;
 
 
         static CCTileMap tileMap;
@@ -54,8 +54,8 @@ namespace Tiled.Droid
         static List<ImmortalityDrink> immortalitydrink_List = new List<ImmortalityDrink>();
         static List<Coin> coin_List = new List<Coin>();
         static List<Finish> finish_List = new List<Finish>();
-        static CCPoint character_place;
-        CCLabel time_label;
+        static List<CCPoint> character_place = new List<CCPoint>();
+        static CCLabel time_label;
         CCLabel door_key_label;
         CCLabel treasure_key_label;
         CCLabel health_point_label;
@@ -67,11 +67,12 @@ namespace Tiled.Droid
         bool[,] walls;
         bool[,] doors;
         bool[,] finishes;
-        int[] char_pos = new int[2];
+        //int[] char_pos = new int[2];
         int[] char_pos_enemy1 = new int[2];
+        static List<int[]> char_pos = new List<int[]>();
         static CCPoint center = new CCPoint(384 / 2, 240 / 2);
         static CCPoint char_diff;
-        String _level;
+        static String _level;
         DateTime date_start;
         int numberOfColumns;
         int numberOfRows;
@@ -80,10 +81,10 @@ namespace Tiled.Droid
         DateTime refresh_time;
         bool refreshed = true;
         TimeSpan temp;
-        int starting_health_point;
-        int starting_coin_count;
-        int health_point;
-        int coin_count;
+        static int starting_health_point;
+        static int starting_coin_count;
+        static int health_point;
+        static int coin_count;
         int immortality_count;
         String _speed;
 
@@ -93,17 +94,25 @@ namespace Tiled.Droid
         Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         private static TcpClient tcpClient;
         static String text;
-
+        static int _id;
+        static int _player_count;
 
         public CCLabel Time_label { get => time_label; set => time_label = value; }
 
-        public MultiPlayerGameLayer(MainLayer mainLayer, String level, int hp, String speed, NetworkStream serverStream)
+        public MultiPlayerGameLayer(MainLayer mainLayer, String level, int hp, String speed, NetworkStream serverStream, int id, int playercount)
         {
             _level = level;
             _mainLayer = mainLayer;
             _serverStream = serverStream;
             starting_health_point = hp;
             _speed = speed;
+            _id = id;
+            _player_count = playercount;
+            for(int i = 0; i < playercount; i++)
+            { 
+                character_place.Add(new CCPoint(-50, -50));
+                char_pos.Add(new int[2]);
+            }
             Schedule(CollisionCheck, interval: 0.1f); //0.042f);
             Schedule(ShowTimer, interval: 1.0f);
             
@@ -167,15 +176,25 @@ namespace Tiled.Droid
             switch (temp[0])
             {
                 case "CharacterPosition":
-                    CharacterPosition(int.Parse(temp[1]), int.Parse(temp[2]));
+                    if (temp.Length == 5)
+                    {
+                        CharacterPosition(int.Parse(temp[1]), int.Parse(temp[2]), int.Parse(temp[3]), int.Parse(temp[4]));
+                    }
                     break;
-                    
+                case "Victory":
+                    int coin_end = starting_coin_count - coin_count;
+                    int health_end = starting_health_point - health_point;
+                    _mainLayer.Victory(time_label.Text, _level, coin_end, health_end);
+                    break;
+                case "DisconnectGame":
+                    _mainLayer.Died();
+                    break;
                 default:
                     break;
             }
         }
 
-        static void CharacterPosition(int x, int y)
+        static void CharacterPosition(int x, int y, int x2, int y2)
         {
             /*CCPoint char_position = new CCPoint(x * 16 + 8, 240 - (y * 16) + 8);
             CCPoint temp = char_position - character.Position;
@@ -183,24 +202,84 @@ namespace Tiled.Droid
             {
                 characterModel.Position = char_position - char_diff;
             }*/
-            CCPoint char_position = new CCPoint(x * 16 + 16, 240 - (y * 16));
-            if (char_position != character_place)
+            List<int> xes = new List<int>();
+            List<int> yes = new List<int>();
+            xes.Add(x);
+            xes.Add(x2);
+            yes.Add(y);
+            yes.Add(y2);
+            if (_id == 0)
             {
-                CCPoint diff = char_position - character_place;
-                int vertical_unit = (int)diff.Y;
-                int horizontal_unit = (int)diff.X;
-                Step_Vertical(-1*vertical_unit);
-                Step_Horizontal(-1*horizontal_unit);
-                character_place = char_position;
+                CCPoint char_position = new CCPoint(x * 16 + 16, 240 - (y * 16));
+                //if (char_position != character_place[_id])
+                if (char_position != character_place[0])
+                {
+                    CCPoint diff = char_position - character_place[_id];
+                    int vertical_unit = (int)diff.Y;
+                    int horizontal_unit = (int)diff.X;
+                    Step_Vertical(-1 * vertical_unit);
+                    Step_Horizontal(-1 * horizontal_unit);
+                    character_place[_id] = char_position;
+                }
+                CCPoint char_position2 = new CCPoint(x2 * 16 + 16, 240 - (y2 * 16));
+                if (char_position2 != character_place[1])
+                {
+                    CCPoint diff = char_position2 - character_place[1];
+                    int vertical_unit = (int)diff.Y;
+                    int horizontal_unit = (int)diff.X;
+                    foreach (var cme in charmodel_enemy_List)
+                    {
+                        cme.MoveX(horizontal_unit);
+                        cme.MoveY(vertical_unit);
+                    }
+                    character_place[1] = char_position2;
+                }
+            }
+            if (_id == 1)
+            {
+                CCPoint char_position = new CCPoint(x2 * 16 + 16, 240 - (y2 * 16));
+                if (char_position != character_place[1])
+                {
+                    CCPoint diff = char_position - character_place[_id];
+                    int vertical_unit = (int)diff.Y;
+                    int horizontal_unit = (int)diff.X;
+                    Step_Vertical(-1 * vertical_unit);
+                    Step_Horizontal(-1 * horizontal_unit);
+                    character_place[_id] = char_position;
+                }
+                CCPoint char_position2 = new CCPoint(x * 16 + 16, 240 - (y * 16));
+                if (char_position2 != character_place[0])
+                {
+                    CCPoint diff = char_position2 - character_place[0];
+                    int vertical_unit = (int)diff.Y;
+                    int horizontal_unit = (int)diff.X;
+                    foreach (var cm in charmodel_List)
+                    {
+                        cm.MoveX(horizontal_unit);
+                        cm.MoveY(vertical_unit);
+                    }
+                    character_place[0] = char_position2;
+                }
             }
         }
 
         static void Step_Vertical(int move_unit)
         {
             tileMap.TileLayersContainer.Position += new CCPoint(0, move_unit);
-            foreach (var cme in charmodel_enemy_List)
+            char_pos[_id][1] = char_pos[_id][1] + move_unit / 16;
+            if (_id == 0)
             {
-                cme.MoveY(move_unit);
+                foreach (var cme in charmodel_enemy_List)
+                {
+                    cme.MoveY(move_unit);
+                }
+            }
+            if (_id == 1)
+            {
+                foreach (var cm in charmodel_List)
+                {
+                    cm.MoveY(move_unit);
+                }
             }
 
             foreach (var treasure in treasure_List)
@@ -257,9 +336,20 @@ namespace Tiled.Droid
         static void Step_Horizontal(int move_unit)
         {
             tileMap.TileLayersContainer.Position += new CCPoint(move_unit, 0);
-            foreach (var cme in charmodel_enemy_List)
+            char_pos[_id][0] = char_pos[_id][0] - move_unit/16;
+            if (_id == 0)
             {
-                cme.MoveX(move_unit);
+                foreach (var cme in charmodel_enemy_List)
+                {
+                    cme.MoveX(move_unit);
+                }
+            }
+            if (_id == 1)
+            {
+                foreach (var cm in charmodel_List)
+                {
+                    cm.MoveX(move_unit);
+                }
             }
 
             foreach (var treasure in treasure_List)
@@ -370,13 +460,23 @@ namespace Tiled.Droid
 
             // Összes elem helyére tolása
 
-            char_diff = character_place - center;
+            char_diff = character_place[_id] - center;
             tileMap.TileLayersContainer.Position -= new CCPoint(char_diff);
-
-            foreach (var ce in charmodel_enemy_List)
-            {
-                ce.Position -= new CCPoint(char_diff);
-            }
+            /*if (_id == 0)
+            {*/
+                foreach (var ce in charmodel_enemy_List)
+                {
+                    ce.Position -= new CCPoint(char_diff);
+                }
+            //}
+            /*else if (_id == 1)
+            {*/
+                foreach (var cm in charmodel_List)
+                {
+                    cm.Position -= new CCPoint(char_diff);
+                }
+            /*}*/
+            
 
             foreach (var treasure in treasure_List)
             {
@@ -561,6 +661,17 @@ namespace Tiled.Droid
                         coin_count_label.Text = "score: " + (coin_count).ToString();
                     }
                 }
+                foreach (var characterenemyModel in charmodel_enemy_List)
+                {
+                    if (coin.BoundingBoxTransformedToWorld.IntersectsRect(characterenemyModel.BoundingBoxTransformedToParent))
+                    {
+                        //CCSimpleAudioEngine.SharedEngine.PlayEffect("sounds/coineffect");
+                        RemoveChild(coin);
+                        coin_List.Remove(coin);
+                        coin_count++;
+                        coin_count_label.Text = "score: " + (coin_count).ToString();
+                    }
+                }
             }
             List<Bullet> temp_List = new List<Bullet>();
             foreach (var bullet in bullet_List)
@@ -586,6 +697,32 @@ namespace Tiled.Droid
                             {
                                 charmodel.UnShield();
                                 charmodel.ChangeSprite();
+                            }
+                            immortality_count--;
+                        }
+                        else
+                        {
+                            immortality_count--;
+                        }
+                    }
+                }
+                foreach (var characterenemyModel in charmodel_enemy_List)
+                {
+                    if (bullet.sprite.BoundingBoxTransformedToWorld.IntersectsRect(characterenemyModel.BoundingBoxTransformedToParent))
+                    {
+                        RemoveChild(bullet);
+                        bullet_List.Remove(bullet);
+                        if (immortality_count == 0)
+                        {
+                            health_point--;
+                            health_point_label.Text = "lives: " + health_point.ToString();
+                        }
+                        else if (immortality_count == 1)
+                        {
+                            foreach (var charenemymodel in charmodel_enemy_List)
+                            {
+                                charenemymodel.UnShield();
+                                charenemymodel.ChangeSprite();
                             }
                             immortality_count--;
                         }
@@ -621,6 +758,16 @@ namespace Tiled.Droid
                         treasure_key_label.Text = treasure_key_count.ToString();
                     }
                 }
+                foreach (var characterenemyModel in charmodel_enemy_List)
+                {
+                    if (treasurekey.BoundingBoxTransformedToWorld.IntersectsRect(characterenemyModel.BoundingBoxTransformedToParent))
+                    {
+                        RemoveChild(treasurekey);
+                        treasurekey_List.Remove(treasurekey);
+                        treasure_key_count++;
+                        treasure_key_label.Text = treasure_key_count.ToString();
+                    }
+                }
             }
             List<DoorKey> tempdoor = new List<DoorKey>();
             foreach (var doorkey in doorkey_List)
@@ -632,6 +779,16 @@ namespace Tiled.Droid
                 foreach (var characterModel in charmodel_List)
                 {
                     if (doorkey.BoundingBoxTransformedToWorld.IntersectsRect(characterModel.BoundingBoxTransformedToParent))
+                    {
+                        RemoveChild(doorkey);
+                        doorkey_List.Remove(doorkey);
+                        door_key_count++;
+                        door_key_label.Text = door_key_count.ToString();
+                    }
+                }
+                foreach (var characterenemyModel in charmodel_enemy_List)
+                {
+                    if (doorkey.BoundingBoxTransformedToWorld.IntersectsRect(characterenemyModel.BoundingBoxTransformedToParent))
                     {
                         RemoveChild(doorkey);
                         doorkey_List.Remove(doorkey);
@@ -651,6 +808,17 @@ namespace Tiled.Droid
                 foreach (var characterModel in charmodel_List)
                 {
                     if (freezedrink.BoundingBoxTransformedToWorld.IntersectsRect(characterModel.BoundingBoxTransformedToParent))
+                    {
+                        RemoveChild(freezedrink);
+                        freezedrink_List.Remove(freezedrink);
+                        // Stop time
+                        refresh_time = date_start.AddSeconds(10.0);
+                        refreshed = false;
+                    }
+                }
+                foreach (var characterenemyModel in charmodel_enemy_List)
+                {
+                    if (freezedrink.BoundingBoxTransformedToWorld.IntersectsRect(characterenemyModel.BoundingBoxTransformedToParent))
                     {
                         RemoveChild(freezedrink);
                         freezedrink_List.Remove(freezedrink);
@@ -679,6 +847,21 @@ namespace Tiled.Droid
                         {
                             charmodel.Shield();
                             charmodel.ChangeSprite();
+                        }
+                        immortality_count += 5;
+                    }
+                }
+                foreach (var characterenemyModel in charmodel_enemy_List)
+                {
+                    if (immortalitydrink.BoundingBoxTransformedToWorld.IntersectsRect(characterenemyModel.BoundingBoxTransformedToParent))
+                    {
+                        RemoveChild(immortalitydrink);
+                        immortalitydrink_List.Remove(immortalitydrink);
+                        // No damage for X collision
+                        foreach (var charmodelenemy in charmodel_enemy_List)
+                        {
+                            charmodelenemy.Shield();
+                            charmodelenemy.ChangeSprite();
                         }
                         immortality_count += 5;
                     }
@@ -777,9 +960,9 @@ namespace Tiled.Droid
                 {
                     layer.RemoveTile(tileAtXy);
 
-                    // Create a Character Entity
+                    // Create Character Entity
                     character = new CharacterModel("pplayer_1_", properties["part"]);
-                    if ((properties["part"] == "1") || (properties["part"] == "3"))
+                    /*if ((properties["part"] == "1") || (properties["part"] == "3"))
                     {
                         character.PositionX = 184;
                     }
@@ -794,14 +977,16 @@ namespace Tiled.Droid
                     else
                     {
                         character.PositionY = 112;
-                    }
+                    }*/
+                    character.PositionX = worldX;
+                    character.PositionY = worldY;
                     this.AddChild(character);
                     charmodel_List.Add(character);
                     if (properties["part"] == "1")
                     {
-                        character_place = new CCPoint(worldX + 8, worldY - 8);
-                        char_pos[0] = ccolumn;
-                        char_pos[1] = rrow - 1;
+                        character_place[0] = new CCPoint(worldX + 8, worldY - 8);
+                        char_pos[0][0] = ccolumn;
+                        char_pos[0][1] = numberOfRows - (rrow); // rrow -1 
                     }
                 }
                 else if (properties != null && properties.ContainsKey("isWall") && properties["isWall"] == "true")
@@ -832,6 +1017,12 @@ namespace Tiled.Droid
 
                     this.AddChild(character_enemy);
                     charmodel_enemy_List.Add(character_enemy);
+                    if (properties["part"] == "1")
+                    {
+                        character_place[1] = new CCPoint(worldX + 8, worldY - 8);
+                        char_pos[1][0] = ccolumn;
+                        char_pos[1][1] = numberOfRows - (rrow);// - 1); 
+                    }
                 }
                 else if (properties != null && properties.ContainsKey("isShooting") && properties["isShooting"] == "true")
                 {
@@ -1009,10 +1200,10 @@ namespace Tiled.Droid
 
                     else if (button_special.sprite.BoundingBoxTransformedToWorld.ContainsPoint(touch.Location))
                     {
-                        byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Special button Request");
+                        /*byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Special button Request");
                         _serverStream.Write(outStream, 0, outStream.Length);
-                        _serverStream.Flush();
-
+                        _serverStream.Flush();*/
+                        // Player 1
                         //bal alsó negyed
                         bool opened = false;
                         CCPoint location = new CCPoint(charmodel_List[0].PositionX - 16, charmodel_List[0].PositionY);
@@ -1036,7 +1227,10 @@ namespace Tiled.Droid
                                 {
                                     door.Open();
                                     opened = true;
-                                    walls[char_pos[0] - 1, char_pos[1]] = false;
+                                    walls[char_pos[_id][0] - 1, char_pos[_id][1]] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;"+ (char_pos[_id][0] - 1).ToString()+";"+(char_pos[_id][1]).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
                                 }
                             }
                         }
@@ -1061,7 +1255,10 @@ namespace Tiled.Droid
                                 {
                                     door.Open();
                                     opened = true;
-                                    walls[char_pos[0], char_pos[1] - 1] = false;
+                                    walls[char_pos[_id][0], char_pos[_id][1] - 1] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0]).ToString() + ";" + (char_pos[_id][1] - 1).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
                                 }
                             }
                         }
@@ -1088,7 +1285,10 @@ namespace Tiled.Droid
                                 {
                                     door.Open();
                                     opened = true;
-                                    walls[char_pos[0] - 1, char_pos[1]] = false;
+                                    walls[char_pos[_id][0] - 1, char_pos[_id][1]] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0] - 1).ToString() + ";" + (char_pos[_id][1]).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
                                 }
                             }
                         }
@@ -1113,7 +1313,10 @@ namespace Tiled.Droid
                                 {
                                     door.Open();
                                     opened = true;
-                                    walls[char_pos[0], char_pos[1] + 1] = false;
+                                    walls[char_pos[_id][0], char_pos[_id][1] + 1] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0]).ToString() + ";" + (char_pos[_id][1] + 1).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
                                 }
                             }
                         }
@@ -1126,7 +1329,10 @@ namespace Tiled.Droid
                                 {
                                     door.Open();
                                     opened = true;
-                                    walls[char_pos[0], char_pos[1] + 2] = false;
+                                    walls[char_pos[_id][0], char_pos[_id][1] + 2] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0]).ToString() + ";" + (char_pos[_id][1] + 2).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
                                 }
                             }
                         }
@@ -1153,7 +1359,10 @@ namespace Tiled.Droid
                                 {
                                     door.Open();
                                     opened = true;
-                                    walls[char_pos[0], char_pos[1] - 1] = false;
+                                    walls[char_pos[_id][0], char_pos[_id][1] - 1] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0]).ToString() + ";" + (char_pos[_id][1] - 1).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
                                 }
                             }
                         }
@@ -1178,7 +1387,10 @@ namespace Tiled.Droid
                                 {
                                     door.Open();
                                     opened = true;
-                                    walls[char_pos[0] + 2, char_pos[1]] = false;
+                                    walls[char_pos[_id][0] + 2, char_pos[_id][1]] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0] + 2).ToString() + ";" + (char_pos[_id][1]).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
                                 }
                             }
                         }
@@ -1205,7 +1417,10 @@ namespace Tiled.Droid
                                 {
                                     door.Open();
                                     opened = true;
-                                    walls[char_pos[0] + 2, char_pos[1]] = false;
+                                    walls[char_pos[_id][0] + 2, char_pos[_id][1]] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0] + 2).ToString() + ";" + (char_pos[_id][1]).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
                                 }
                             }
                         }
@@ -1230,7 +1445,10 @@ namespace Tiled.Droid
                                 {
                                     door.Open();
                                     opened = true;
-                                    walls[char_pos[0] + 1, char_pos[1] + 1] = false;
+                                    walls[char_pos[_id][0] + 1, char_pos[_id][1] + 1] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0] + 1).ToString() + ";" + (char_pos[_id][1] + 1).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
                                 }
                             }
                         }
@@ -1243,7 +1461,274 @@ namespace Tiled.Droid
                                 {
                                     door.Open();
                                     opened = true;
-                                    walls[char_pos[0] + 1, char_pos[1] + 2] = false;
+                                    walls[char_pos[_id][0] + 1, char_pos[_id][1] + 2] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0] + 1).ToString() + ";" + (char_pos[_id][1] + 2).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
+                                }
+                            }
+                        }
+                        // Player 2
+                        //bal alsó negyed
+                        location = new CCPoint(charmodel_enemy_List[0].PositionX - 16, charmodel_enemy_List[0].PositionY);
+                        foreach (var treasure in treasure_List)
+                        {
+                            if (treasure.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (treasure_key_count > 0)
+                                {
+                                    treasure_key_count--;
+                                    treasure_key_label.Text = treasure_key_count.ToString();
+                                    treasure.Interact();
+                                }
+                            }
+                        }
+                        foreach (var door in door_List)
+                        {
+                            if (door.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (door_key_count > 0)
+                                {
+                                    door.Open();
+                                    opened = true;
+                                    walls[char_pos[_id][0] - 1, char_pos[_id][1]] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0] - 1).ToString() + ";" + (char_pos[_id][1]).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
+                                }
+                            }
+                        }
+                        location = new CCPoint(charmodel_enemy_List[0].PositionX, charmodel_enemy_List[0].PositionY - 16);
+                        foreach (var treasure in treasure_List)
+                        {
+                            if (treasure.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (treasure_key_count > 0)
+                                {
+                                    treasure_key_count--;
+                                    treasure_key_label.Text = treasure_key_count.ToString();
+                                    treasure.Interact();
+                                }
+                            }
+                        }
+                        foreach (var door in door_List)
+                        {
+                            if (door.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (door_key_count > 0)
+                                {
+                                    door.Open();
+                                    opened = true;
+                                    walls[char_pos[_id][0], char_pos[_id][1] - 1] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0]).ToString() + ";" + (char_pos[_id][1] - 1).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
+                                }
+                            }
+                        }
+
+                        //bal felső negyed
+                        location = new CCPoint(charmodel_enemy_List[1].PositionX - 16, charmodel_enemy_List[1].PositionY);
+                        foreach (var treasure in treasure_List)
+                        {
+                            if (treasure.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (treasure_key_count > 0)
+                                {
+                                    treasure_key_count--;
+                                    treasure_key_label.Text = treasure_key_count.ToString();
+                                    treasure.Interact();
+                                }
+                            }
+                        }
+                        foreach (var door in door_List)
+                        {
+                            if (door.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (door_key_count > 0)
+                                {
+                                    door.Open();
+                                    opened = true;
+                                    walls[char_pos[_id][0] - 1, char_pos[_id][1]] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0] - 1).ToString() + ";" + (char_pos[_id][1]).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
+                                }
+                            }
+                        }
+                        location = new CCPoint(charmodel_enemy_List[1].PositionX, charmodel_enemy_List[1].PositionY);
+                        foreach (var treasure in treasure_List)
+                        {
+                            if (treasure.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (treasure_key_count > 0)
+                                {
+                                    treasure_key_count--;
+                                    treasure_key_label.Text = treasure_key_count.ToString();
+                                    treasure.Interact();
+                                }
+                            }
+                        }
+                        foreach (var door in door_List)
+                        {
+                            if (door.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (door_key_count > 0)
+                                {
+                                    door.Open();
+                                    opened = true;
+                                    walls[char_pos[_id][0], char_pos[_id][1] + 1] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0]).ToString() + ";" + (char_pos[_id][1] + 1).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
+                                }
+                            }
+                        }
+                        location = new CCPoint(charmodel_enemy_List[1].PositionX, charmodel_enemy_List[1].PositionY + 16);
+                        foreach (var door in door_List)
+                        {
+                            if (door.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (door_key_count > 0)
+                                {
+                                    door.Open();
+                                    opened = true;
+                                    walls[char_pos[_id][0], char_pos[_id][1] + 2] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0]).ToString() + ";" + (char_pos[_id][1] + 2).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
+                                }
+                            }
+                        }
+
+                        //jobb alsó negyed
+                        location = new CCPoint(charmodel_enemy_List[2].PositionX, charmodel_enemy_List[2].PositionY - 16);
+                        foreach (var treasure in treasure_List)
+                        {
+                            if (treasure.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (treasure_key_count > 0)
+                                {
+                                    treasure_key_count--;
+                                    treasure_key_label.Text = treasure_key_count.ToString();
+                                    treasure.Interact();
+                                }
+                            }
+                        }
+                        foreach (var door in door_List)
+                        {
+                            if (door.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (door_key_count > 0)
+                                {
+                                    door.Open();
+                                    opened = true;
+                                    walls[char_pos[_id][0], char_pos[_id][1] - 1] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0]).ToString() + ";" + (char_pos[_id][1] - 1).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
+                                }
+                            }
+                        }
+                        location = new CCPoint(charmodel_enemy_List[2].PositionX + 16, charmodel_enemy_List[2].PositionY);
+                        foreach (var treasure in treasure_List)
+                        {
+                            if (treasure.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (treasure_key_count > 0)
+                                {
+                                    treasure_key_count--;
+                                    treasure_key_label.Text = treasure_key_count.ToString();
+                                    treasure.Interact();
+                                }
+                            }
+                        }
+                        foreach (var door in door_List)
+                        {
+                            if (door.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (door_key_count > 0)
+                                {
+                                    door.Open();
+                                    opened = true;
+                                    walls[char_pos[_id][0] + 2, char_pos[_id][1]] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0] + 2).ToString() + ";" + (char_pos[_id][1]).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
+                                }
+                            }
+                        }
+
+                        //jobb felső negyed
+                        location = new CCPoint(charmodel_enemy_List[3].PositionX + 16, charmodel_enemy_List[3].PositionY);
+                        foreach (var treasure in treasure_List)
+                        {
+                            if (treasure.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (treasure_key_count > 0)
+                                {
+                                    treasure_key_count--;
+                                    treasure_key_label.Text = treasure_key_count.ToString();
+                                    treasure.Interact();
+                                }
+                            }
+                        }
+                        foreach (var door in door_List)
+                        {
+                            if (door.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (door_key_count > 0)
+                                {
+                                    door.Open();
+                                    opened = true;
+                                    walls[char_pos[_id][0] + 2, char_pos[_id][1]] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0] + 2).ToString() + ";" + (char_pos[_id][1]).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
+                                }
+                            }
+                        }
+                        location = new CCPoint(charmodel_enemy_List[3].PositionX, charmodel_enemy_List[3].PositionY);
+                        foreach (var treasure in treasure_List)
+                        {
+                            if (treasure.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (treasure_key_count > 0)
+                                {
+                                    treasure_key_count--;
+                                    treasure_key_label.Text = treasure_key_count.ToString();
+                                    treasure.Interact();
+                                }
+                            }
+                        }
+                        foreach (var door in door_List)
+                        {
+                            if (door.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (door_key_count > 0)
+                                {
+                                    door.Open();
+                                    opened = true;
+                                    walls[char_pos[_id][0] + 1, char_pos[_id][1] + 1] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0] + 1).ToString() + ";" + (char_pos[_id][1] + 1).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
+                                }
+                            }
+                        }
+                        location = new CCPoint(charmodel_enemy_List[3].PositionX, charmodel_enemy_List[3].PositionY + 16);
+                        foreach (var door in door_List)
+                        {
+                            if (door.BoundingBoxTransformedToWorld.ContainsPoint(location))
+                            {
+                                if (door_key_count > 0)
+                                {
+                                    door.Open();
+                                    opened = true;
+                                    walls[char_pos[_id][0] + 1, char_pos[_id][1] + 2] = false;
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Open;" + (char_pos[_id][0] + 1).ToString() + ";" + (char_pos[_id][1] + 2).ToString());
+                                    _serverStream.Write(outStream, 0, outStream.Length);
+                                    _serverStream.Flush();
                                 }
                             }
                         }

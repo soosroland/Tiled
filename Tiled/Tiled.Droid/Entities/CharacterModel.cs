@@ -23,18 +23,18 @@ namespace Tiled.Droid.Entities
         public CharacterModel(String str, String part) : base()
         {
             sprite = new CCSprite(str + part + ".png");
-            sprite_shielded = new CCSprite("shielded_" + part + ".png");
+            sprite_shielded = new CCSprite("shielded_" + str + part + ".png");
             this.AddChild(sprite);
         }
 
         public override void MoveX(int x)
         {
-            sprite.PositionX += x;
+            this.PositionX += x;
         }
 
         public override void MoveY(int y)
         {
-            sprite.PositionY += y;
+            this.PositionY += y;
         }
         public void Shield()
         {

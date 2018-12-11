@@ -92,6 +92,7 @@
     <Compile Include="HowToPlayLayer.cs" />
     <Compile Include="MultiPlayerGameLayer.cs" />
     <Compile Include="MultiPlayerLayer.cs" />
+    <Compile Include="MultiPlayerLoadingLayer.cs" />
     <Compile Include="SinglePlayerLayer.cs" />
     <Compile Include="MainLayer.cs" />
     <Compile Include="MenuLayer.cs" />
@@ -334,16 +335,16 @@
     <AndroidAsset Include="Assets\Content\sounds\backgroundmusic.mp3" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\Content\shielded_1.png" />
+    <AndroidAsset Include="Assets\Content\shielded_pplayer_1_1.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\Content\shielded_2.png" />
+    <AndroidAsset Include="Assets\Content\shielded_pplayer_1_2.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\Content\shielded_3.png" />
+    <AndroidAsset Include="Assets\Content\shielded_pplayer_1_3.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\Content\shielded_4.png" />
+    <AndroidAsset Include="Assets\Content\shielded_pplayer_1_4.png" />
   </ItemGroup>
   <ItemGroup>
     <AndroidAsset Include="Assets\Content\background_1.png" />
@@ -374,6 +375,18 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidAsset Include="Assets\Content\continue.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\Content\shielded_pplayer_2_1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\Content\shielded_pplayer_2_2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\Content\shielded_pplayer_2_3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\Content\shielded_pplayer_2_4.png" />
   </ItemGroup>
   <Import Project="..\Tiled.Shared\EmptyProject.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
