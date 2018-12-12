@@ -14,11 +14,11 @@ namespace Tiled.Droid
     public class MultiPlayerGameLayer : CCLayer
     {
 
-        static MainLayer _mainLayer;
-        static NetworkStream _serverStream;
+        MainLayer _mainLayer;
+        NetworkStream _serverStream;
 
 
-        static CCTileMap tileMap;
+        CCTileMap tileMap;
         CCEventListenerTouchAllAtOnce touchListener;
         Button button_left;
         Button button_right;
@@ -37,25 +37,25 @@ namespace Tiled.Droid
         ImmortalityDrink immortalitydrink;
         Coin coin;
         Finish finish;
-        static CharacterModel character;
-        static CharacterModel character_enemy;
+        CharacterModel character;
+        CharacterModel character_enemy;
         //List<Entities> entities = new List<Entities>();
-        static List<CharacterModel> charmodel_List = new List<CharacterModel>();
-        static List<CharacterModel> charmodel_enemy_List = new List<CharacterModel>();
-        static List<Treasure> treasure_List = new List<Treasure>();
-        static List<Cannon> shooter_List = new List<Cannon>();
-        static List<Bullet> bullet_List;
-        static List<Wall> wall_List = new List<Wall>();
-        static List<Wall> shootingWall_List = new List<Wall>();
-        static List<Door> door_List = new List<Door>();
-        static List<DoorKey> doorkey_List = new List<DoorKey>();
-        static List<TreasureKey> treasurekey_List = new List<TreasureKey>();
-        static List<FreezeDrink> freezedrink_List = new List<FreezeDrink>();
-        static List<ImmortalityDrink> immortalitydrink_List = new List<ImmortalityDrink>();
-        static List<Coin> coin_List = new List<Coin>();
-        static List<Finish> finish_List = new List<Finish>();
-        static List<CCPoint> character_place = new List<CCPoint>();
-        static CCLabel time_label;
+        List<CharacterModel> charmodel_List = new List<CharacterModel>();
+        List<CharacterModel> charmodel_enemy_List = new List<CharacterModel>();
+        List<Treasure> treasure_List = new List<Treasure>();
+        List<Cannon> shooter_List = new List<Cannon>();
+        List<Bullet> bullet_List;
+        List<Wall> wall_List = new List<Wall>();
+        List<Wall> shootingWall_List = new List<Wall>();
+        List<Door> door_List = new List<Door>();
+        List<DoorKey> doorkey_List = new List<DoorKey>();
+        List<TreasureKey> treasurekey_List = new List<TreasureKey>();
+        List<FreezeDrink> freezedrink_List = new List<FreezeDrink>();
+        List<ImmortalityDrink> immortalitydrink_List = new List<ImmortalityDrink>();
+        List<Coin> coin_List = new List<Coin>();
+        List<Finish> finish_List = new List<Finish>();
+        List<CCPoint> character_place = new List<CCPoint>();
+        CCLabel time_label;
         CCLabel door_key_label;
         CCLabel treasure_key_label;
         CCLabel health_point_label;
@@ -69,10 +69,10 @@ namespace Tiled.Droid
         bool[,] finishes;
         //int[] char_pos = new int[2];
         int[] char_pos_enemy1 = new int[2];
-        static List<int[]> char_pos = new List<int[]>();
-        static CCPoint center = new CCPoint(384 / 2, 240 / 2);
-        static CCPoint char_diff;
-        static String _level;
+        List<int[]> char_pos = new List<int[]>();
+        CCPoint center = new CCPoint(384 / 2, 240 / 2);
+        CCPoint char_diff;
+        String _level;
         DateTime date_start;
         int numberOfColumns;
         int numberOfRows;
@@ -81,21 +81,21 @@ namespace Tiled.Droid
         DateTime refresh_time;
         bool refreshed = true;
         TimeSpan temp;
-        static int starting_health_point;
-        static int starting_coin_count;
-        static int health_point;
-        static int coin_count;
+        int starting_health_point;
+        int starting_coin_count;
+        int health_point;
+        int coin_count;
         int immortality_count;
         String _speed;
 
         private static int bufferSize = 2048;
-        private static byte[] buffer = new byte[bufferSize];
-        private static List<Socket> clientSockets = new List<Socket>();
+        private byte[] buffer = new byte[bufferSize];
+        private List<Socket> clientSockets = new List<Socket>();
         Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        private static TcpClient tcpClient;
-        static String text;
-        static int _id;
-        static int _player_count;
+        private TcpClient tcpClient;
+        String text;
+        int _id;
+        int _player_count;
 
         public CCLabel Time_label { get => time_label; set => time_label = value; }
 
@@ -141,7 +141,7 @@ namespace Tiled.Droid
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex + " Errooooor"); }
         }
 
-        private static void ReceiveCallBack(IAsyncResult e)
+        private void ReceiveCallBack(IAsyncResult e)
         {
             try
             {
@@ -169,7 +169,7 @@ namespace Tiled.Droid
             catch (Exception ex ) { String s = ex.Message; }
         }
 
-        protected static void HandleIncomingEvent(String text, String ip)
+        protected void HandleIncomingEvent(String text, String ip)
         {
             String[] temp = text.Split(';');
             //byte[] outStream;
@@ -180,13 +180,22 @@ namespace Tiled.Droid
                     {
                         CharacterPosition(int.Parse(temp[1]), int.Parse(temp[2]), int.Parse(temp[3]), int.Parse(temp[4]));
                     }
+                    if (temp.Length == 3)
+                    {
+                        CharacterPosition(int.Parse(temp[1]), int.Parse(temp[2]));
+                    }
                     break;
                 case "Victory":
                     int coin_end = starting_coin_count - coin_count;
                     int health_end = starting_health_point - health_point;
+                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Leave");
+                    _serverStream.Write(outStream, 0, outStream.Length);
+                    _serverStream.Flush();
+                    serverSocket.Close();
                     _mainLayer.Victory(time_label.Text, _level, coin_end, health_end);
                     break;
                 case "DisconnectGame":
+                    serverSocket.Close();
                     _mainLayer.Died();
                     break;
                 default:
@@ -194,7 +203,7 @@ namespace Tiled.Droid
             }
         }
 
-        static void CharacterPosition(int x, int y, int x2, int y2)
+        void CharacterPosition(int x, int y, int x2, int y2)
         {
             /*CCPoint char_position = new CCPoint(x * 16 + 8, 240 - (y * 16) + 8);
             CCPoint temp = char_position - character.Position;
@@ -263,7 +272,21 @@ namespace Tiled.Droid
             }
         }
 
-        static void Step_Vertical(int move_unit)
+        void CharacterPosition(int x, int y)
+        {
+            CCPoint char_position = new CCPoint(x * 16 + 16, 240 - (y * 16));
+            if (char_position != character_place[0])
+            {
+                CCPoint diff = char_position - character_place[_id];
+                int vertical_unit = (int)diff.Y;
+                int horizontal_unit = (int)diff.X;
+                Step_Vertical(-1 * vertical_unit);
+                Step_Horizontal(-1 * horizontal_unit);
+                character_place[_id] = char_position;
+            }
+        }
+
+        void Step_Vertical(int move_unit)
         {
             tileMap.TileLayersContainer.Position += new CCPoint(0, move_unit);
             char_pos[_id][1] = char_pos[_id][1] + move_unit / 16;
@@ -333,7 +356,7 @@ namespace Tiled.Droid
             }
         }
 
-        static void Step_Horizontal(int move_unit)
+        void Step_Horizontal(int move_unit)
         {
             tileMap.TileLayersContainer.Position += new CCPoint(move_unit, 0);
             char_pos[_id][0] = char_pos[_id][0] - move_unit/16;
@@ -540,6 +563,11 @@ namespace Tiled.Droid
                {
                    if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                    {
+                       byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Leave");
+                       _serverStream.Write(outStream, 0, outStream.Length);
+                       _serverStream.Flush();
+                       serverSocket.Close();
+                       this.RemoveAllChildren();
                        _mainLayer.BackToMenu();
                    }
                }
@@ -641,6 +669,10 @@ namespace Tiled.Droid
         {
             if (health_point <= 0)
             {
+                byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Leave");
+                _serverStream.Write(outStream, 0, outStream.Length);
+                _serverStream.Flush();
+                serverSocket.Close();
                 _mainLayer.Died();
             }
             List<Coin> tempcoin = new List<Coin>();
@@ -1014,15 +1046,18 @@ namespace Tiled.Droid
 
                     character_enemy.PositionX = worldX;
                     character_enemy.PositionY = worldY;
-
-                    this.AddChild(character_enemy);
-                    charmodel_enemy_List.Add(character_enemy);
-                    if (properties["part"] == "1")
+                    if (_player_count > 1)
                     {
-                        character_place[1] = new CCPoint(worldX + 8, worldY - 8);
-                        char_pos[1][0] = ccolumn;
-                        char_pos[1][1] = numberOfRows - (rrow);// - 1); 
+                        this.AddChild(character_enemy);
+                        charmodel_enemy_List.Add(character_enemy);
+                        if (properties["part"] == "1")
+                        {
+                            character_place[1] = new CCPoint(worldX + 8, worldY - 8);
+                            char_pos[1][0] = ccolumn;
+                            char_pos[1][1] = numberOfRows - (rrow);// - 1); 
+                        }
                     }
+
                 }
                 else if (properties != null && properties.ContainsKey("isShooting") && properties["isShooting"] == "true")
                 {
@@ -1468,7 +1503,9 @@ namespace Tiled.Droid
                                 }
                             }
                         }
-                        // Player 2
+                        if (charmodel_enemy_List.Count > 3)
+                        {
+                            // Player 2
                         //bal alsó negyed
                         location = new CCPoint(charmodel_enemy_List[0].PositionX - 16, charmodel_enemy_List[0].PositionY);
                         foreach (var treasure in treasure_List)
@@ -1736,6 +1773,7 @@ namespace Tiled.Droid
                         {
                             door_key_count--;
                             door_key_label.Text = door_key_count.ToString();
+                        }
                         }
                     }
                 }

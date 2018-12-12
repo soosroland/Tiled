@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Net.Sockets;
 using System.Text;
 using Tiled.Droid.Entities;
 
@@ -11,12 +12,14 @@ namespace Tiled
     class VictoryLayer : CCLayer
     {
         MainLayer _mainLayer;
+        NetworkStream _serverStream;
         CCLabel grat;
         CCLabel time_label;
         CCLabel best_time_label;
-        public VictoryLayer(MainLayer mainLayer, String time, String level, int missed_coins, int lost_lives)
+        public VictoryLayer(MainLayer mainLayer, String time, String level, int missed_coins, int lost_lives, NetworkStream serverStream)
         {
             _mainLayer = mainLayer;
+            _serverStream = serverStream;
             Button backGround = new Button("victory.jpg");
             backGround.Position = new CCPoint(192, 120);
             AddChild(backGround);
@@ -72,6 +75,9 @@ namespace Tiled
                {
                    if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                    {
+                       /*byte[] outStream = System.Text.Encoding.ASCII.GetBytes("Leave");
+                       _serverStream.Write(outStream, 0, outStream.Length);
+                       _serverStream.Flush();*/
                        _mainLayer.BackToMenu();
                    }
                }

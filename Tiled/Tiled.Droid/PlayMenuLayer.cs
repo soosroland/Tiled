@@ -25,14 +25,14 @@ namespace Tiled
             };
             AddChild(backGround);
 
-            Single_player = new Button("LevelSelect") // Single Player létrehozása
+            Single_player = new Button("SinglePlayer") // Single Player létrehozása
             {
                 Scale = 2,
                 Position = new CCPoint(192, 150)
             };
             AddChild(Single_player);
 
-            Multi_player = new Button("HowToPlay") // Multi Player létrehozása
+            Multi_player = new Button("MultiPlayer") // Multi Player létrehozása
             {
                 Scale = 2,
                 Position = new CCPoint(192, 90)
@@ -43,6 +43,16 @@ namespace Tiled
         protected override void AddedToScene()
         {
             base.AddedToScene();
+
+            Schedule(
+               (dt) =>
+               {
+                   if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
+                   {
+                       _mainLayer.BackToMenu();
+                   }
+               }
+           );
 
             // Use the bounds to layout the positioning of our drawable assets
             var bounds = VisibleBoundsWorldspace;
@@ -63,7 +73,7 @@ namespace Tiled
                 }
                 else if (Multi_player.sprite.BoundingBoxTransformedToWorld.ContainsPoint(touch.Location))
                 {
-                    _mainLayer.MultiPlayer();
+                    _mainLayer.MultiPlayerSelectorMenu();
                 }
             }
         }

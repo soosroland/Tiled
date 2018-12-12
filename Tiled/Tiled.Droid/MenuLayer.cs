@@ -26,7 +26,7 @@ namespace Tiled.Shared
             backGround.Position = new CCPoint(192, 120);
             AddChild(backGround);
 
-            play = new Button("LevelSelect"); // TODO play.png elkészítése
+            play = new Button("Play");
             play.Scale = 2;
             play.Position = new CCPoint(192, 150);
             AddChild(play);

@@ -19,6 +19,7 @@ namespace Tiled
         GameLayer gameLayer;
         MultiPlayerGameLayer multiPlayerGameLayer;
         MultiPlayerLoadingLayer multiPlayerLoadingLayer;
+        GoldRushLoadingLayer goldRushLoadingLayer;
         HighScoreLayer highScoreLayer;
         HowToPlayLayer howToPlayLayer;
         YouDiedLayer youDiedLayer;
@@ -26,6 +27,10 @@ namespace Tiled
         PlayMenuLayer PlayMenuLayer;
         SinglePlayerLayer SinglePlayerLayer;
         MultiPlayerLayer MultiPlayerLayer;
+        MultiPlayerSelector MultiPlayerSelector;
+        GoldRushLayer GoldRushLayer;
+        GoldRush GoldRush;
+        CoinEndLayer coinEndLayer;
 
         NetworkStream serverStream;
         private static int bufferSize = 2048;
@@ -70,19 +75,39 @@ namespace Tiled
             this.AddChild(multiPlayerGameLayer = new MultiPlayerGameLayer(this, level_num, hp, speed, serverStream, _player_id, player_count));
         }
 
-        public void StartMultiPlayerGame(String level_num, int hp, String speed)
+        public void StartGoldRush(String level_num)
+        {
+            this.RemoveChild(goldRushLoadingLayer);
+            this.AddChild(GoldRush = new GoldRush(this, level_num, 1, "normal", serverStream, _player_id, 2));
+        }
+
+        public void StartMultiPlayerGame(String level_num, int hp, String speed, int playercount)
         {
             _level_num = level_num;
             _hp = hp;
             _speed = speed;
+            player_count = playercount;
             this.RemoveChild(MultiPlayerLayer);
             this.AddChild(multiPlayerLoadingLayer = new MultiPlayerLoadingLayer(this, serverStream));
+        }
+
+        public void GoldRushStart(String level_num, int hp, String speed, int playercount)
+        {
+            _level_num = level_num;
+            this.RemoveChild(GoldRushLayer);
+            this.AddChild(goldRushLoadingLayer = new GoldRushLoadingLayer(this, serverStream));
         }
 
         public void PlayMenu()
         {
             this.RemoveChild(menuLayer);
             this.AddChild(PlayMenuLayer = new PlayMenuLayer(this));
+        }
+
+        public void MultiPlayerSelectorMenu()
+        {
+            this.RemoveChild(PlayMenuLayer);
+            this.AddChild(MultiPlayerSelector = new MultiPlayerSelector(this));
         }
 
         public void SinglePlayer()
@@ -93,8 +118,14 @@ namespace Tiled
 
         public void MultiPlayer()
         {
-            this.RemoveChild(PlayMenuLayer);
+            this.RemoveChild(MultiPlayerSelector);
             this.AddChild(MultiPlayerLayer = new MultiPlayerLayer(this, serverStream));
+        }
+
+        public void GoldRushSelector()
+        {
+            this.RemoveChild(MultiPlayerSelector);
+            this.AddChild(GoldRushLayer = new GoldRushLayer(this, serverStream));
         }
 
         public void HighScores()
@@ -118,13 +149,19 @@ namespace Tiled
         public void Victory(String s, String level, int missed_coins, int lost_lives)
         {
             this.RemoveAllChildren();
-            this.AddChild(victoryLayer = new VictoryLayer(this, s, level, missed_coins, lost_lives));
+            this.AddChild(victoryLayer = new VictoryLayer(this, s, level, missed_coins, lost_lives, serverStream));
         }
 
         public void Died()
         {
             this.RemoveAllChildren();
-            this.AddChild(youDiedLayer = new YouDiedLayer(this));
+            this.AddChild(youDiedLayer = new YouDiedLayer(this, serverStream));
+        }
+
+        public void EndCoinGame(int coin1, int coin2, int time, int id)
+        {
+            this.RemoveAllChildren();
+            this.AddChild(coinEndLayer = new CoinEndLayer(this, time, coin1, coin2, id, serverStream));
         }
 
         void CallBack(IAsyncResult e)
@@ -135,6 +172,8 @@ namespace Tiled
                 clientSockets.Add(socket);
                 System.Diagnostics.Debug.WriteLine("Client connected");
                 socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallBack), socket);
+                serverSocket.BeginAccept(new AsyncCallback(CallBack), null);
+
             }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex + " Errooooor"); }
         }
@@ -159,12 +198,16 @@ namespace Tiled
                 byte[] dataBuf = new byte[received];
                 Array.Copy(buffer, dataBuf, received);
 
-                string text = System.Text.Encoding.ASCII.GetString(dataBuf);
+                String text = System.Text.Encoding.ASCII.GetString(dataBuf);
+                HandleIncomingEvent(text, socket.RemoteEndPoint.ToString().Split(':')[0]);
+                System.Diagnostics.Debug.WriteLine("Server request: Multi: " + text);
+                socket.BeginReceive(buffer, 0, bufferSize, SocketFlags.None, ReceiveCallBack, socket);
+                /*string text = System.Text.Encoding.ASCII.GetString(dataBuf);
                 HandleIncomingEvent(text, socket.RemoteEndPoint.ToString().Split(':')[0]);
                 System.Diagnostics.Debug.WriteLine("Server request: Menu: " + text);
-                socket.BeginReceive(buffer, 0, bufferSize, SocketFlags.None, ReceiveCallBack, socket);
+                socket.BeginReceive(buffer, 0, bufferSize, SocketFlags.None, ReceiveCallBack, socket);*/
             }
-            catch (Exception) { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         protected void HandleIncomingEvent(String text, String ip)
@@ -175,6 +218,10 @@ namespace Tiled
                 case "StartGame":
                     _player_id = int.Parse(temp[1]);
                     StartMultiPlayerGame2(_level_num, _hp, _speed);
+                    break;
+                case "GoldRushStart":
+                    _player_id = int.Parse(temp[1]);
+                    StartGoldRush(_level_num);
                     break;
                 default:
                     break;

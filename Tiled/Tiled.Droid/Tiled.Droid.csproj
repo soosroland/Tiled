@@ -72,6 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppDelegate.cs" />
+    <Compile Include="CoinEndLayer.cs" />
     <Compile Include="Entities\Coin.cs" />
     <Compile Include="Entities\Finish.cs" />
     <Compile Include="Entities\ImmortalityDrink.cs" />
@@ -88,11 +89,15 @@
     <Compile Include="Entities\Treasure.cs" />
     <Compile Include="Entities\Wall.cs" />
     <Compile Include="GameLayer.cs" />
+    <Compile Include="GoldRush.cs" />
+    <Compile Include="GoldRushLayer.cs" />
+    <Compile Include="GoldRushLoadingLayer.cs" />
     <Compile Include="HighScoreLayer.cs" />
     <Compile Include="HowToPlayLayer.cs" />
     <Compile Include="MultiPlayerGameLayer.cs" />
     <Compile Include="MultiPlayerLayer.cs" />
     <Compile Include="MultiPlayerLoadingLayer.cs" />
+    <Compile Include="MultiPlayerSelector.cs" />
     <Compile Include="SinglePlayerLayer.cs" />
     <Compile Include="MainLayer.cs" />
     <Compile Include="MenuLayer.cs" />
@@ -387,6 +392,33 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidAsset Include="Assets\Content\shielded_pplayer_2_4.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\Content\MultiPlayer.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\Content\SinglePlayer.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\Content\BackToMenu.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\Content\WaitingScreen.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\Content\Play.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\Content\Custom.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\Content\GoldRush.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\Content\Standard.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\Content\vs.png" />
   </ItemGroup>
   <Import Project="..\Tiled.Shared\EmptyProject.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
